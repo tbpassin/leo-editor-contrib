@@ -10,7 +10,6 @@
 <v t="tom.20240921075317.1"><vh>Implementation 2 (production)</vh>
 <v t="tom.20240930232554.1"><vh>Layout Commands</vh>
 <v t="tom.20240930232554.3"><vh>@command layout-swap-nav-panel</vh></v>
-<v t="tom.20240930232554.4"><vh>@command layout-vr3-toggle-in-main-split</vh></v>
 <v t="tom.20240930232554.5"><vh>@command layout-make-tabbed-body-pane</vh></v>
 <v t="tom.20240930232554.6"><vh>@command layout-vr3-to-tabbed-body</vh></v>
 <v t="tom.20240930232554.7"><vh>@command layout-vr-to-tabbed-body</vh></v>
@@ -38,7 +37,6 @@
 <v t="tom.20240930232952.15"><vh>@item layout-make-tabbed-body-pane</vh></v>
 <v t="tom.20240930232952.16"><vh>@menu &amp;VR3 Layouts</vh>
 <v t="tom.20240930232952.17"><vh>@item layout-vr3-to-tabbed-body</vh></v>
-<v t="tom.20240930232952.18"><vh>@item layout-vr3-toggle-in-main-split</vh></v>
 <v t="tom.20240930232952.19"><vh>@item layout-toggle-vr3-in-log</vh></v>
 </v>
 <v t="tom.20240930232952.20"><vh>@menu VR Layouts</vh>
@@ -151,39 +149,6 @@ target.addWidget(lf)
 target.setSizes([100_000] * len(target.sizes()))
 
 </t>
-<t tx="tom.20240930232554.4">@language python
-"""Toggle VR3 in main splitter without destroying the instance."""
-from leo.core.leoQt import QtCore
-
-def find_widget(name):
-    return g.app.gui.find_widget_by_name(c, name)
-
-def show_pane(w):
-    w.setUpdatesEnabled(True)
-    w.show()
-
-c.doCommandByName('layout-initialize')
-cache = find_widget('leo-layout-cache')
-
-vr3 = find_widget('viewrendered3_pane')
-if not vr3:
-    import leo.plugins.viewrendered3 as v3
-    # try:
-        # vr3 = v3.getVr3({'c':c})
-    # except:
-    h = c.hash()
-    vr3 = v3.controllers[h] = v3.ViewRenderedController3(c, cache)
-
-ms = find_widget('main_splitter')
-if ms.indexOf(vr3) &gt; -1:
-    vr3.setParent(cache)
-else:
-    ms.addWidget(vr3)
-    # g.app.gui.equalize_splitter(ms)
-    ms.setSizes([100_000] * len(ms.sizes()))
-    # Avoid flash each time VR3 pane is re-opened.
-    QtCore.QTimer.singleShot(60, lambda: show_pane(vr3))
-</t>
 <t tx="tom.20240930232554.5">@language python
 from leo.core.leoQt import QtWidgets
 
@@ -280,7 +245,6 @@ def show_pane(w):
     w.setUpdatesEnabled(True)
     c.doCommandByName('vr-show')
 
-c.doCommandByName('layout-initialize')
 cache = find_widget('leo-layout-cache')
 
 # Find or create VR widget
@@ -300,26 +264,20 @@ if vr.parent() == ms:
     vr.setParent(cache)
 else:
     vr.setParent(ms)
-    # g.app.gui.equalize_splitter(ms)
-    ms.setSizes([100_000] * len(ms.sizes()))
+    g.app.gui.equalize_splitter(ms)
+
     # Avoid flash each time VR pane is re-opened.
     QtCore.QTimer.singleShot(60, lambda: show_pane(vr))
 </t>
 <t tx="tom.20240930232554.9">TABNAME = 'VR3'
 CACHENAME = 'leo-layout-cache'
 
-c.doCommandByName('layout-initialize')
-
 log = c.frame.log
 
 vr3 = g.app.gui.find_widget_by_name(c, 'viewrendered3_pane')
 if not vr3:
     import leo.plugins.viewrendered3 as v3
-    try:
-        vr3 = v3.getVr3({'c':c})
-    except:
-        h = c.hash()
-        vr3 = v3.controllers[h] = v3.ViewRenderedController3(c)
+    vr3 = v3.getVr3({'c':c})
 
 # if a VR3 tab exists, remove the vr3 widget
 index = log.findTabIndex(TABNAME)
@@ -342,7 +300,6 @@ else:
 <t tx="tom.20240930232952.15">Make &amp;Body Tabbed</t>
 <t tx="tom.20240930232952.16"></t>
 <t tx="tom.20240930232952.17">&amp;VR3 - Open In Tabbed Body</t>
-<t tx="tom.20240930232952.18">VR3 -Toggle In Split &amp;Main Panel</t>
 <t tx="tom.20240930232952.19">VR3 - Toggle In &amp;Log Frame</t>
 <t tx="tom.20240930232952.2">&amp;Restore Default Layout From Settings</t>
 <t tx="tom.20240930232952.20"></t>
