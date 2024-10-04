@@ -9,7 +9,8 @@
 <v t="tom.20240921075238.1"><vh>@settings</vh>
 <v t="tom.20240921075317.1"><vh>Implementation 2 (production)</vh>
 <v t="tom.20240930232554.1"><vh>Layout Commands</vh>
-<v t="tom.20240930232554.3"><vh>@command layout-swap-nav-panel</vh></v>
+<v t="tom.20240930232554.3"><vh>@@command layout-swap-nav-panel</vh></v>
+<v t="tom.20241003223252.1"><vh>@command layout-swap-log-panel</vh></v>
 <v t="tom.20240930232554.5"><vh>@command layout-make-tabbed-body-pane</vh></v>
 <v t="tom.20240930232554.6"><vh>@command layout-vr3-to-tabbed-body</vh></v>
 <v t="tom.20240930232554.7"><vh>@command layout-vr-to-tabbed-body</vh></v>
@@ -33,7 +34,7 @@
 <v t="tom.20240930232952.12"><vh>@item layout-render-focused</vh></v>
 </v>
 <v t="tom.20240930232952.13"><vh>@item -</vh></v>
-<v t="tom.20240930232952.14"><vh>@item layout-swap-nav-panel</vh></v>
+<v t="tom.20240930232952.14"><vh>@item layout-swap-log-panel</vh></v>
 <v t="tom.20240930232952.15"><vh>@item layout-make-tabbed-body-pane</vh></v>
 <v t="tom.20240930232952.16"><vh>@menu &amp;VR3 Layouts</vh>
 <v t="tom.20240930232952.17"><vh>@item layout-vr3-to-tabbed-body</vh></v>
@@ -295,7 +296,7 @@ else:
 <t tx="tom.20240930232952.11">&amp;Horizontal Thirds (With VR3)</t>
 <t tx="tom.20240930232952.12">&amp;Render-focused Layout (With VR)</t>
 <t tx="tom.20240930232952.13"></t>
-<t tx="tom.20240930232952.14">&amp;Swap Nav Frame Location
+<t tx="tom.20240930232952.14">&amp;Swap Log Frame Location
 </t>
 <t tx="tom.20240930232952.15">Make &amp;Body Tabbed</t>
 <t tx="tom.20240930232952.16"></t>
@@ -316,5 +317,39 @@ else:
 <t tx="tom.20240930232952.7"></t>
 <t tx="tom.20240930232952.8">&amp;Vertical-thirds Layout (With VR)</t>
 <t tx="tom.20240930232952.9">&amp;Vertical-thirds Layout #2 (With VR)</t>
+<t tx="tom.20241003223252.1">@language python
+"""Move Log frame between main and secondary splitters.
+
+   If the Log frame is contained in a different splitter,
+   possibly with some other widget, the entire splitter
+   will be swapped between the main and secondary splitters.
+"""
+
+gui = g.app.gui
+
+ms = gui.find_widget_by_name(c, 'main_splitter')
+ss = gui.find_widget_by_name(c, 'secondary_splitter')
+lf = gui.find_widget_by_name(c, 'logFrame')
+
+lf_parent = lf.parent()
+lf_parent_container = lf_parent.parent()
+widget = None
+
+if lf_parent in (ss, ms):
+    # Move just the lf
+    target = ms if lf_parent is ss else ss
+    widget = lf
+elif lf_parent_container in (ms, ss):
+    # Move lf's entire container
+    target = ms if lf_parent_container is ss else ss
+    widget = lf_parent
+else:
+    g.es("Don't know what widget or container to swap")
+
+if widget is not None:
+    target.addWidget(widget)
+    g.app.gui.equalize_splitter(target)
+
+</t>
 </tnodes>
 </leo_file>
